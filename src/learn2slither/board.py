@@ -1,20 +1,14 @@
 import random
 
-from learn2slither.constants import DIRECTIONS, UP, DOWN, LEFT, RIGHT
+from learn2slither.constants import DIRECTIONS, DOWN, LEFT, RIGHT, UP
 from learn2slither.types import State
-
 
 REWARDS = {
     "red_apple": -10,
     "green_apple": 10,
     "empty": -1,
-    "wall_collision": -100,
-    "self_collision": -100,
-}
-EMPTY_CATEGORY = {
-    range(1, 2): "0",
-    range(2, 7): "1",
-    range(7, 15): "2",
+    "wall_collision": -30,
+    "self_collision": -30,
 }
 
 
@@ -111,44 +105,31 @@ class Board:
         red_apple_pos = self.red_apple
         snake_body = self.snake[1:]
 
-        state = []
-        empty_distance = 0
+        distance = 1
         while 0 <= r < max_r and 0 <= c < max_c:
             pos = (r, c)
 
             if pos in snake_body:
-                state.append("S")
+                return "S" + self._append_distance(distance)
             elif pos in green_apples_pos:
-                state.append("G")
+                return "G" + self._append_distance(distance)
             elif pos == red_apple_pos:
-                state.append("R")
-            else:
-                state.append("0")
-                empty_distance += 1
-
-            if empty_distance > 0 and state[-1] != "0":
-                state[-1 - empty_distance : -1] = self._get_empty_category(
-                    empty_distance
-                )
-                empty_distance = 0
+                return "R" + self._append_distance(distance)
 
             r += dr
             c += dc
+            distance += 1
 
-        state.append("W")
-        if empty_distance > 0 and state[-1] != "0":
-            state[-1 - empty_distance : -1] = self._get_empty_category(empty_distance)
+        return "W" + self._append_distance(distance)
 
-        return "".join(state)
+    def _append_distance(self, distance: int) -> str:
+        if distance == 1:
+            return "0"
+        elif 2 <= distance <= 5:
+            return "1"
+        elif distance > 5:
+            return "2"
 
-    def _get_empty_category(self, empty_distance: int) -> str:
-        if empty_distance > 14:
-            return "3"
-        return next(
-            category
-            for interval, category in EMPTY_CATEGORY.items()
-            if empty_distance in interval
-        )
     def _generate_snake(self):
         # Head
         head = self.random_position()
