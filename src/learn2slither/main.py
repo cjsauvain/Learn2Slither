@@ -64,20 +64,19 @@ def _game_loop(
         action = None
         board = Board(board_size, max_snake_length=best_length)
         dead = False
-        state = agentSnake.get_state(board)
+        state = board.get_state()
         while not dead:
             if terminalRenderer:
                 terminalRenderer.draw(board, action)
             if boardRenderer:
                 boardRenderer.draw(board)
-                print(state)
                 if _event_loop(step_by_step):
                     game_over = True
                     break
 
             action = agentSnake.choose_action(state)
             dead, reward = board.step(action)
-            next_state = agentSnake.get_state(board)
+            next_state = board.get_state()
             if not dont_learn:
                 agentSnake.update_q_value(state, next_state, action, reward)
             state = next_state

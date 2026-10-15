@@ -1,6 +1,8 @@
 import random
 
-from learn2slither.constants import DIRECTIONS
+from learn2slither.constants import DIRECTIONS, UP, DOWN, LEFT, RIGHT
+from learn2slither.types import State
+
 
 REWARDS = {
     "red_apple": -10,
@@ -9,14 +11,16 @@ REWARDS = {
     "wall_collision": -100,
     "self_collision": -100,
 }
+EMPTY_CATEGORY = {
+    range(1, 2): "0",
+    range(2, 7): "1",
+    range(7, 15): "2",
+}
 
 
 class Board:
     def __init__(self, board_size: tuple[int, int], max_snake_length: int):
         self.board_size: tuple[int, int] = board_size
-        self.snake: list[tuple[int, int]] = []
-        self.green_apples: list[tuple[int, int]] = []
-        self.red_apple: tuple[int, int] = ()
         self.occupied: set[tuple[int, int]] = set()
         self.max_snake_length: int = max_snake_length
         self.max_duration: int = 0
@@ -90,6 +94,61 @@ class Board:
 
         return pos
 
+    def get_state(self) -> State:
+        return (
+            self._get_line_of_sight(UP),
+            self._get_line_of_sight(DOWN),
+            self._get_line_of_sight(LEFT),
+            self._get_line_of_sight(RIGHT),
+        )
+
+    def _get_line_of_sight(self, direction: int) -> str:
+        dr, dc = DIRECTIONS[direction]
+        r, c = self.snake[0][0] + dr, self.snake[0][1] + dc
+        max_r, max_c = self.board_size
+
+        green_apples_pos = set(self.green_apples)
+        red_apple_pos = self.red_apple
+        snake_body = self.snake[1:]
+
+        state = []
+        empty_distance = 0
+        while 0 <= r < max_r and 0 <= c < max_c:
+            pos = (r, c)
+
+            if pos in snake_body:
+                state.append("S")
+            elif pos in green_apples_pos:
+                state.append("G")
+            elif pos == red_apple_pos:
+                state.append("R")
+            else:
+                state.append("0")
+                empty_distance += 1
+
+            if empty_distance > 0 and state[-1] != "0":
+                state[-1 - empty_distance : -1] = self._get_empty_category(
+                    empty_distance
+                )
+                empty_distance = 0
+
+            r += dr
+            c += dc
+
+        state.append("W")
+        if empty_distance > 0 and state[-1] != "0":
+            state[-1 - empty_distance : -1] = self._get_empty_category(empty_distance)
+
+        return "".join(state)
+
+    def _get_empty_category(self, empty_distance: int) -> str:
+        if empty_distance > 14:
+            return "3"
+        return next(
+            category
+            for interval, category in EMPTY_CATEGORY.items()
+            if empty_distance in interval
+        )
     def _generate_snake(self):
         # Head
         head = self.random_position()

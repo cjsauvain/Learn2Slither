@@ -4,22 +4,7 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
-from learn2slither.board import Board
-from learn2slither.constants import (
-    DIRECTIONS,
-    DOWN,
-    LEFT,
-    RIGHT,
-    UP,
-)
-
-EMPTY_CATEGORY = {
-    range(1, 2): "0",
-    range(2, 7): "1",
-    range(7, 15): "2",
-}
-
-State = tuple[str, str, str, str]
+from learn2slither.types import State
 
 
 class AgentSnake:
@@ -83,62 +68,6 @@ class AgentSnake:
             raise ValueError(f"Unsupported file extension {path.suffix}")
         dumper(path)
 
-    def get_state(self, board: Board) -> State:
-        return (
-            self._get_line_of_sight(board, UP),
-            self._get_line_of_sight(board, DOWN),
-            self._get_line_of_sight(board, LEFT),
-            self._get_line_of_sight(board, RIGHT),
-        )
-
-    def _get_line_of_sight(self, board: Board, direction: int) -> str:
-        dr, dc = DIRECTIONS[direction]
-        r, c = board.snake[0][0] + dr, board.snake[0][1] + dc
-        max_r, max_c = board.board_size
-
-        green_apples_pos = set(board.green_apples)
-        red_apple_pos = board.red_apple
-        snake_body = board.snake[1:]
-
-        state = []
-        empty_distance = 0
-        while 0 <= r < max_r and 0 <= c < max_c:
-            pos = (r, c)
-
-            if pos in snake_body:
-                state.append("S")
-            elif pos in green_apples_pos:
-                state.append("G")
-            elif pos == red_apple_pos:
-                state.append("R")
-            else:
-                state.append("0")
-                empty_distance += 1
-
-            if empty_distance > 0 and state[-1] != "0":
-                state[-1 - empty_distance : -1] = self._get_empty_category(
-                    empty_distance
-                )
-                empty_distance = 0
-
-            r += dr
-            c += dc
-
-        state.append("W")
-        if empty_distance > 0 and state[-1] != "0":
-            state[-1 - empty_distance : -1] = self._get_empty_category(empty_distance)
-
-        return "".join(state)
-
-    def _get_empty_category(self, empty_distance: int) -> str:
-        if empty_distance > 14:
-            return "3"
-        return next(
-            category
-            for interval, category in EMPTY_CATEGORY.items()
-            if empty_distance in interval
-        )
-
     def _load_q_table(self) -> defaultdict:
         default = lambda: [0.0, 0.0, 0.0, 0.0]
         if not self.load:
@@ -161,7 +90,7 @@ class AgentSnake:
     def _load_json(
         self, path: Path
     ) -> dict[
-        State,
+        tuple[str, ...],
         list[float],
     ]:
         try:
@@ -174,7 +103,7 @@ class AgentSnake:
     def _load_pickle(
         self, path: Path
     ) -> dict[
-        State,
+        tuple[str, ...],
         list[float],
     ]:
         try:
@@ -204,5 +133,5 @@ class AgentSnake:
     ) -> str:
         return "|".join(sight for sight in state)
 
-    def _decode_state(self, key: str) -> State:
+    def _decode_state(self, key: str) -> tuple[str, ...]:
         return tuple(key.split("|"))
