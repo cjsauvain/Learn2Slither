@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-from collections import defaultdict
 
 import pygame
 
-from learn2slither.agent_snake import State
 from learn2slither.board import Board
 from learn2slither.constants import DOWN, LEFT, RIGHT, UP
 
