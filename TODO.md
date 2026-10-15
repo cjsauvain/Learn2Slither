@@ -1,3 +1,2 @@
-- Modular Architecture
 - Error handling
-- Catch Every Exception
+- flake8
