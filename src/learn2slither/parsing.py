@@ -20,7 +20,7 @@ def _between_0_and_1(value: str) -> float:
     except ValueError:
         raise argparse.ArgumentTypeError(f"{value} is not a float")
 
-    if f < 0 or f > 1:
+    if not (0 <= f <= 1):
         raise argparse.ArgumentTypeError(f"{value} must be in range [0, 1]")
 
     return f
@@ -122,6 +122,6 @@ def parse_command_line() -> argparse.Namespace:
     # Validate the compatibility of
     # --step-by-step and --board-display-off options
     if args.step_by_step and args.board_display_off:
-        parser.error("--step-by-step cannot be used with --board-display_off")
+        parser.error("--step-by-step cannot be used with --board-display-off")
 
     return args
