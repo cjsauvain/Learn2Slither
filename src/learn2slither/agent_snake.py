@@ -21,18 +21,15 @@ class AgentSnake:
         self.save = save
         self.q_table = self._load_q_table()
         self.learning_rate = learning_rate
+        self.learning_rate_decay = learning_rate / sessions
         self.gamma = gamma
         self.epsilon = 1.0 if not dont_learn else 0.0
         self.epsilon_decay = 1.0 / sessions
 
     def update_q_value(
-        self,
-        state: State,
-        next_state: State,
-        action: int,
-        reward: int,
+        self, state: State, next_state: State, action: int, reward: int, dead: bool
     ):
-        max_future_q = max(self.q_table[next_state])
+        max_future_q = 0.0 if dead else max(self.q_table[next_state])
         current_q = self.q_table[state][action]
 
         self.q_table[state][action] = current_q + self.learning_rate * (
@@ -51,7 +48,10 @@ class AgentSnake:
         return random.choice([a for a, q in enumerate(q_values) if q == best])
 
     def update_epsilon(self):
-        self.epsilon = max(0.01, self.epsilon - self.epsilon_decay)
+        self.epsilon = max(0.1, self.epsilon - self.epsilon_decay)
+
+    def update_learning_rate(self):
+        self.learning_rate = max(0.01, self.learning_rate - self.learning_rate_decay)
 
     def save_q_table(self):
         print(f"\nSave learning model into {self.save}")
@@ -90,7 +90,7 @@ class AgentSnake:
     def _load_json(
         self, path: Path
     ) -> dict[
-        tuple[str, ...],
+        State,
         list[float],
     ]:
         try:
@@ -103,7 +103,7 @@ class AgentSnake:
     def _load_pickle(
         self, path: Path
     ) -> dict[
-        tuple[str, ...],
+        State,
         list[float],
     ]:
         try:
@@ -133,5 +133,11 @@ class AgentSnake:
     ) -> str:
         return "|".join(sight for sight in state)
 
-    def _decode_state(self, key: str) -> tuple[str, ...]:
-        return tuple(key.split("|"))
+    def _decode_state(self, key: str) -> State:
+        key_split = key.split("|")
+        if len(key_split) != 4:
+            raise ValueError(f"Invalid state: {key}")
+        if any(len(sight) != 2 for sight in key_split):
+            raise ValueError(f"Invalid state: {key}")
+
+        return tuple(key_split)
