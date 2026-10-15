@@ -1,0 +1,25 @@
+[project]
+name = "learn2slither"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jordan Sauvain", email = "102552311+cjsauvain@users.noreply.github.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "pygame-ce>=2.5.8",
+    "tqdm>=4.70.1",
+]
+
+[project.scripts]
+learn2slither = "learn2slither.main:main"
+
+[build-system]
+requires = ["uv_build>=0.12.15,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "debugpy>=1.8.22",
+]
