@@ -9,8 +9,5 @@ wheels/
 # Virtual environments
 .venv
 
-# Models
-models/
-
 # VSCode
 .vscode/
