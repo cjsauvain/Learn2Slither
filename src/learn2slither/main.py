@@ -83,7 +83,9 @@ def _game_loop(
             reward = interpreter.get_reward(step_event)
             next_state = interpreter.get_state(board)
             if not dont_learn:
-                agentSnake.update_q_value(state, next_state, action, reward, dead)
+                agentSnake.update_q_value(
+                    state, next_state, action, reward, dead
+                )
             state = next_state
 
             if dont_learn:
@@ -97,7 +99,10 @@ def _game_loop(
             agentSnake.update_epsilon()
             agentSnake.update_learning_rate()
 
-    print(f"Game over, max length = {best_length}, max duration = {best_duration}")
+    print(
+        f"Game over, max length = {best_length}, "
+        f"max duration = {best_duration}"
+    )
 
     if boardRenderer:
         pygame.quit()
@@ -117,9 +122,13 @@ def main():
         )
         interpreter = Interpreter()
         boardRenderer = (
-            BoardRenderer(args.board_size) if not args.board_display_off else None
+            BoardRenderer(args.board_size)
+            if not args.board_display_off else None
         )
-        terminalRenderer = TerminalRenderer() if not args.terminal_display_off else None
+        terminalRenderer = (
+            TerminalRenderer()
+            if not args.terminal_display_off else None
+        )
 
         try:
             _game_loop(

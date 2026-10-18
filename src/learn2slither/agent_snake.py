@@ -27,7 +27,12 @@ class AgentSnake:
         self.epsilon_decay = 1.0 / sessions
 
     def update_q_value(
-        self, state: State, next_state: State, action: int, reward: int, dead: bool
+        self,
+        state: State,
+        next_state: State,
+        action: int,
+        reward: int,
+        dead: bool
     ):
         max_future_q = 0.0 if dead else max(self.q_table[next_state])
         current_q = self.q_table[state][action]
@@ -51,7 +56,10 @@ class AgentSnake:
         self.epsilon = max(0.1, self.epsilon - self.epsilon_decay)
 
     def update_learning_rate(self):
-        self.learning_rate = max(0.01, self.learning_rate - self.learning_rate_decay)
+        self.learning_rate = max(
+            0.01,
+            self.learning_rate - self.learning_rate_decay
+        )
 
     def save_q_table(self):
         print(f"\nSave learning model into {self.save}")
@@ -69,7 +77,9 @@ class AgentSnake:
         dumper(path)
 
     def _load_q_table(self) -> defaultdict:
-        default = lambda: [0.0, 0.0, 0.0, 0.0]
+        def default() -> list[float]:
+            return [0.0, 0.0, 0.0, 0.0]
+
         if not self.load:
             return defaultdict(default)
 
@@ -98,7 +108,10 @@ class AgentSnake:
                 q_table = json.load(f)
         except ValueError as e:
             raise ValueError(f"{path} is not a valid JSON file: {e}") from e
-        return {self._decode_state(key): value for key, value in q_table.items()}
+        return {
+            self._decode_state(key): value
+            for key, value in q_table.items()
+        }
 
     def _load_pickle(
         self, path: Path
@@ -111,18 +124,23 @@ class AgentSnake:
                 q_table = pickle.load(f)
         except (ValueError, EOFError, pickle.UnpicklingError) as e:
             raise ValueError(f"{path} is not a valid pickle file: {e}") from e
-        return {self._decode_state(key): value for key, value in q_table.items()}
+        return {
+            self._decode_state(key): value
+            for key, value in q_table.items()
+        }
 
     def _dump_json(self, path: Path):
         data = {
-            self._encode_state(state): value for state, value in self.q_table.items()
+            self._encode_state(state): value
+            for state, value in self.q_table.items()
         }
         with open(path, "w") as f:
             json.dump(data, f, indent=4)
 
     def _dump_pickle(self, path: Path):
         data = {
-            self._encode_state(state): value for state, value in self.q_table.items()
+            self._encode_state(state): value
+            for state, value in self.q_table.items()
         }
         with open(path, "wb") as f:
             pickle.dump(data, f)

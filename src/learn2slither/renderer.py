@@ -99,6 +99,10 @@ class BoardRenderer(Renderer):
         # Vertical Grid
         height = board.board_size[0] * SQUARE_SIZE
         for col in range(board.board_size[1]):
-            pygame.draw.rect(self.win, BLACK, (col * SQUARE_SIZE, 0, 1, height))
+            pygame.draw.rect(
+                self.win,
+                BLACK,
+                (col * SQUARE_SIZE, 0, 1, height)
+            )
 
         pygame.display.update()

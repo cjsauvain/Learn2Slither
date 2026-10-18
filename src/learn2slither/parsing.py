@@ -30,11 +30,14 @@ def _check_board_side(value: str) -> int:
     try:
         n = int(value)
     except ValueError:
-        raise argparse.ArgumentTypeError(f"{value} is not an integer.") from None
+        raise argparse.ArgumentTypeError(
+            f"{value} is not an integer."
+        ) from None
 
     if n < MIN_BOARD_SIZE or n > MAX_BOARD_SIZE:
         raise argparse.ArgumentTypeError(
-            f"board side must be between {MIN_BOARD_SIZE} and {MAX_BOARD_SIZE}, got {value}"
+            f"board side must be between {MIN_BOARD_SIZE} "
+            f"and {MAX_BOARD_SIZE}, got {value}"
         )
 
     return n
@@ -42,7 +45,8 @@ def _check_board_side(value: str) -> int:
 
 def parse_command_line() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter, allow_abbrev=False
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        allow_abbrev=False
     )
 
     parser.add_argument(
@@ -116,7 +120,8 @@ def parse_command_line() -> argparse.Namespace:
         value = getattr(args, name)
         if value and Path(value).suffix.lower() not in SUPPORTED:
             parser.error(
-                f"--{name.replace('_', '-')}: expected a .json, .pkl or .pickle file"
+                f"--{name.replace('_', '-')}: "
+                "expected a .json, .pkl or .pickle file"
             )
 
     # Validate the compatibility of
