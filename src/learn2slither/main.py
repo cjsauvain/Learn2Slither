@@ -5,10 +5,9 @@ from tqdm import tqdm
 
 from learn2slither.agent_snake import AgentSnake
 from learn2slither.board import Board
+from learn2slither.interpreter import Interpreter
 from learn2slither.parsing import parse_command_line
 from learn2slither.renderer import BoardRenderer, TerminalRenderer
-
-MAX_STEPS = 2000
 
 
 def _check_event() -> bool | None:
@@ -43,6 +42,7 @@ def _event_loop(step_by_step: bool) -> bool:
 
 def _game_loop(
     agentSnake: AgentSnake,
+    interpreter: Interpreter,
     terminalRenderer: TerminalRenderer | None,
     boardRenderer: BoardRenderer | None,
     sessions: int,
@@ -53,23 +53,22 @@ def _game_loop(
 ):
     best_length = 3
     best_duration = 0
-    game_over = False
-    if step_by_step:
-        loop_condition = range(sessions)
-    else:
-        loop_condition = tqdm(range(sessions))
+    exit_game = False
+    loop_condition = range(sessions) if step_by_step else tqdm(range(sessions))
     if boardRenderer or terminalRenderer:
         clock = pygame.time.Clock()
+
     for _ in loop_condition:
-        if game_over:
+        if exit_game:
             break
 
         board = Board(board_size, max_snake_length=best_length)
         dead = False
-        state = board.get_state()
-        step = 0
+        state = interpreter.get_state(board)
+        empty_steps = 0
+        max_empty_steps = 5 * (board_size[0] + board_size[1])
         while not dead:
-            if dont_learn and step >= MAX_STEPS:
+            if dont_learn and empty_steps >= max_empty_steps:
                 break
             action = agentSnake.choose_action(state)
             if terminalRenderer:
@@ -77,23 +76,23 @@ def _game_loop(
             if boardRenderer:
                 boardRenderer.draw(board)
                 if _event_loop(step_by_step):
-                    game_over = True
+                    exit_game = True
                     break
 
-            dead, reward = board.step(action)
-            next_state = board.get_state()
+            dead, step_event = board.step(action)
+            reward = interpreter.get_reward(step_event)
+            next_state = interpreter.get_state(board)
             if not dont_learn:
                 agentSnake.update_q_value(state, next_state, action, reward, dead)
             state = next_state
 
+            if dont_learn:
+                empty_steps = empty_steps + 1 if step_event == "empty" else 0
             if boardRenderer or terminalRenderer:
                 clock.tick(fps)
 
-            step += 1
-
         best_length = max(best_length, board.max_snake_length)
-        if dead:
-            best_duration = max(best_duration, board.max_duration)
+        best_duration = max(best_duration, board.max_duration)
         if not dont_learn:
             agentSnake.update_epsilon()
             agentSnake.update_learning_rate()
@@ -116,6 +115,7 @@ def main():
             args.sessions,
             args.dont_learn,
         )
+        interpreter = Interpreter()
         boardRenderer = (
             BoardRenderer(args.board_size) if not args.board_display_off else None
         )
@@ -124,6 +124,7 @@ def main():
         try:
             _game_loop(
                 agentSnake,
+                interpreter,
                 terminalRenderer,
                 boardRenderer,
                 args.sessions,

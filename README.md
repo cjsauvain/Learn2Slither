@@ -34,7 +34,7 @@ uv run learn2slither --sessions <N> [options]
 | `--terminal-display-off` | Hide the terminal output | off |
 | `--step-by-step` | Advance one move per key press (`Space`) | off |
 | `--learning-rate <0-1>` | Learning rate | 0.5 |
-| `--gamma <0-1>` | Discount factor | 0.9 |
+| `--gamma <0-1>` | Discount factor | 0.95 |
 
 Controls in the board window: `Space` to step (with `--step-by-step`), `Esc` to quit.
 
@@ -68,7 +68,7 @@ Game over, max length = 7, max duration = 32
 
 ## Models
 
-Trained models are in `models/` (`1sess`, `10sess`, `100sess`, ...). A model is the Q-table stored as JSON or pickle.
+Trained models are in `models/`. A model is the Q-table stored as JSON or pickle.
 
 ## Project layout
 
@@ -76,8 +76,9 @@ Trained models are in `models/` (`1sess`, `10sess`, `100sess`, ...). A model is 
 src/learn2slither/
   main.py         entry point and game loop
   parsing.py      command line arguments
-  board.py        environment (snake, apples, rewards)
-  agent_snake.py  state, Q-table, action choice, import/export
+  agent_snake.py  Q-table, action choice, import/export
+  board.py        environment (snake, apples)
+  interpreter.py  state-action interpreter (state, rewards)
   renderer.py     pygame board and terminal display
-  constants.py    sizes, colors, rewards, actions
+  constants.py    actions, directions
 ```
