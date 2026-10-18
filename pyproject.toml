@@ -1,7 +1,7 @@
 [project]
 name = "learn2slither"
 version = "0.1.0"
-description = "Add your description here"
+description = "Tabular Q-learning agent that learns to play Snake"
 readme = "README.md"
 authors = [
     { name = "Jordan Sauvain", email = "102552311+cjsauvain@users.noreply.github.com" }
