@@ -63,6 +63,7 @@ def _game_loop(
             break
 
         board = Board(board_size, max_snake_length=best_length)
+        action = None
         dead = False
         state = interpreter.get_state(board)
         empty_steps = 0
@@ -70,7 +71,6 @@ def _game_loop(
         while not dead:
             if dont_learn and empty_steps >= max_empty_steps:
                 break
-            action = agentSnake.choose_action(state)
             if terminalRenderer:
                 terminalRenderer.draw(board, action)
             if boardRenderer:
@@ -79,6 +79,7 @@ def _game_loop(
                     exit_game = True
                     break
 
+            action = agentSnake.choose_action(state)
             dead, step_event = board.step(action)
             reward = interpreter.get_reward(step_event)
             next_state = interpreter.get_state(board)
